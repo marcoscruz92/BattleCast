@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <style type="text/css">
+      body{
+        margin: 0;
+        padding: 0;
+        background-color: #2ecc71;
+        font-family: helvetica;
+      }
+      #title{
+        
+        position: absolute;
+        margin-top: -60px;
+        margin-left: 31em;
+        font-size: 24px;
+        color: white;
+        text-transform: uppercase;
+        -webkit-animation: cssAnimation 3.206s 19 ease;
+        -moz-animation: cssAnimation 3.206s 19 ease;
+        -o-animation: cssAnimation 3.206s 19 ease;
+        }
+        @-webkit-keyframes cssAnimation {
+        from { -webkit-transform: rotate(0deg) scale(0.929) skew(1deg) translate(-10px); }
+        to { -webkit-transform: rotate(0deg) scale(0.992) skew(1deg) translate(-10px); }
+        }
+        @-moz-keyframes cssAnimation {
+        from { -moz-transform: rotate(0deg) scale(0.929) skew(1deg) translate(-10px); }
+        to { -moz-transform: rotate(0deg) scale(0.992) skew(1deg) translate(-10px); }
+        }
+        @-o-keyframes cssAnimation {
+        from { -o-transform: rotate(0deg) scale(0.929) skew(1deg) translate(-10px); }
+        to { -o-transform: rotate(0deg) scale(0.992) skew(1deg) translate(-10px); }
+        }
+      }
+      .player1{
+        position: absolute;
+        margin-left: 20px;
+        margin-top: 0;
+        color: white;
+      }
+      .player2{
+        position: absolute;
+        margin-left: 900px;
+        margin-top: 0;
+      }
+      #arena{
+        width: 960px;
+        height: 550px;
+      /*  border-radius: 50%;
+      */  margin-top: 6em;
+        margin-left:auto;
+        margin-right: auto;
+        border: 5px solid #3498db;
+        /*background-color: #e67e22;  */
+        background: url('wood.jpg');
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+        border-radius: 10px; /* future proofing */
+        -khtml-border-radius: 10px; /* for old Konqueror browsers */    
+      }
+      .ball{
+        position: absolute;
+        height: 60px;
+        width: 60px;
+        margin-top: 275px;
+        /*margin-left: 170px;*/
+        margin-left: 0px;
+       /* border-radius: 50%;
+        background-color: red;*/
+/*        background: url('apple.jpeg');
+*/      }
+      .line{
+        position: absolute;
+        height: 550px;
+        width: 4px;
+        margin-top: 0px;
+        margin-left: 480px;
+        background-color: #e74c3c;
+        /*background: url("aluminum.jpg");*/
+      }
+      .ball2{
+        position: absolute;
+        height: 60px;
+        width: 60px;
+        margin-top: 275px;
+        /*margin-left: 204px;*/
+        margin-left: 900px;
+        /*vertical-align: bottom;*/
+        border-radius: 50%;
+/*        background-color: blue;
+*/      }
+        .winner {
+          position: absolute;
+          margin-top: -10em;
+          margin-left: 12em;
+          font-size: 34px;
+          color: white;
+          display: none;
+          text-align: center;
+        }
+      
+  </style>
+  <title><CENTER> Battle Cast </Center></title>
+  </head>
+  
+  <p id="Debug"> </p>
+  <body>
+    <div id="title"><p>  Battle Cast</p></div>
+    
+    <div class="player1"></div>
+  <div class="player2"></div>
+  <div id="arena">
+<!--     <div class="ball"></div>
+ -->    <img class="ball" src="apple.png">
+<!--     <div class="ball2"></div>
+ -->    <img class="ball2" src="androidsw.png">
+    <div class="line"></div>
+  </div>
+  <div class="winner">
+    <h1>Player Wins</h1>
+  </div>
+  <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script type="text/javascript">
+    $('#arena').click(function(){
+      console.log('hey u clicked');
+      $('.winner').show();
+    });
+  </script>
+    <script type="text/javascript">
+      window.onload = function() {
+        cast.receiver.logger.setLevelValue(0);
+        window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
+        console.log('Starting Receiver Manager');
+        
+        // handler for the 'ready' event
+        castReceiverManager.onReady = function(event) {
+          console.log('Received Ready event: ' + JSON.stringify(event.data));
+          window.castReceiverManager.setApplicationState("Application status is ready...");
+        };
+        
+        var rightPlayers = 0;
+        var leftPlayers = 0;
+        var win = false;
+        // handler for 'senderconnected' event
+        castReceiverManager.onSenderConnected = function(event) {
+          console.log('Received Sender Connected event: ' + event.data);
+          console.log(window.castReceiverManager.getSender(event.data).userAgent);
+          if(event.data == "Right") {
+            rightPlayers++;
+          } else {
+            leftPlayers++;
+          }
+        };
+        
+        // handler for 'senderdisconnected' event
+        castReceiverManager.onSenderDisconnected = function(event) {
+          console.log('Received Sender Disconnected event: ' + event.data);
+          if (window.castReceiverManager.getSenders().length == 0) {
+          window.close();
+        }
+        };
+        
+        // handler for 'systemvolumechanged' event
+        castReceiverManager.onSystemVolumeChanged = function(event) {
+          console.log('Received System Volume Changed event: ' + event.data['level'] + ' ' +
+              event.data['muted']);
+        };
+        // create a CastMessageBus to handle messages for a custom namespace
+        window.messageBus =
+          window.castReceiverManager.getCastMessageBus(
+              'urn:x-cast:com.google.cast.sample.helloworld');
+        // handler for the CastMessageBus message event
+        window.messageBus.onMessage = function(event) {
+          console.log('Message [' + event.senderId + ']: ' + event.data);
+          
+          move(event.data);
+        
+             window.messageBus.send(event.senderId, "You Win");
+          
+         
+        }
+        // initialize the CastReceiverManager with an application status message
+        window.castReceiverManager.start({statusText: "Application is starting"});
+        console.log('Receiver Manager started');
+      };
+    
+///////////////////////////////////////////////////////////////////////////////////////
+function showWinner(){
+}
+    
+ 
+    var tag = false;
+function move(direction) {
+  if(tag ==false){
+      
+    if(parseInt($('.ball').css("margin-left")) < 0 ) {
+          console.log("GAME OVER");
+          $('.player2 p').text("Player1 Won");
+          // window.messageBus.send(event.senderId, "You Win");
+          $('.winner').text("Android wins");
+          $('.winner').show();
+          win = true;
+          tag=true;
+         // $('img .ball').animate({marginLeft: '0'}, 0);
+          // alert("Player1 Won")          
+        } else if(parseInt($('.ball2').css("margin-left"))>900) {
+          //$('img .ball').animate({marginLeft: '930'}, 0);
+          console.log("Game Over");
+          $('.player1 p').text("Player 2 Won");
+        // window.messageBus.send(event.senderId, "You Win");
+          $('.winner').text("IPhone wins");
+          $('.winner').show();
+          win = true;
+          tag=true;
+          alert("Player2 Won")          
+    }
+    if(direction == "Right") {
+      if((parseInt($('.line').css("margin-left")) - parseInt($('.ball').css("margin-left"))  === 60) && (parseInt($('.ball2').css("margin-left")) - parseInt($('.line').css("margin-left")) <= 5) ){
+              $('.ball').animate({marginLeft:  '+=5px'}, 2);
+              $('.line').animate({marginLeft:  '+=5px'}, 2);
+              $('.ball2').animate({marginLeft: '+=5px'}, 2);
+            }
+            else if( parseInt($('.line').css("margin-left")) - parseInt($('.ball').css("margin-left"))  === 60 ){
+              console.log('capture the line');
+              $('.ball').animate({marginLeft: '+=5px'}, 2);
+              $('.line').animate({marginLeft: '+=5px'}, 2);
+            }
+            else{
+              $('.ball').animate({marginLeft: '+=5px'}, 2);
+            }
+        } else {
+           if((parseInt($('.line').css("margin-left")) - parseInt($('.ball').css("margin-left"))  === 60) && (parseInt($('.ball2').css("margin-left")) - parseInt($('.line').css("margin-left"))  <= 5 )){
+              $('.ball2').animate({marginLeft: '-=5px'}, 2);
+              $('.line').animate({marginLeft: '-=5px'}, 2);
+              $('.ball').animate({marginLeft: '-=5px'}, 2);
+            }
+            else if( parseInt($('.ball2').css("margin-left")) - parseInt($('.line').css("margin-left")) <= 5){
+              console.log('capture the line');
+              $('.ball2').animate({marginLeft: '-=5px'}, 2);
+              $('.line').animate({marginLeft: '-=5px'}, 2);
+            }
+            else{
+              $('.ball2').animate({marginLeft: '-=5px'}, 2);
+            }
+      }
+    }else{
+      win = true;
+    }
+}
+// move function ends here
+$("body").keydown(function(e){
+  if(parseInt($('.ball').css("margin-left")) < 0 )
+        {
+          console.log("GAME OVER");
+          // $('.player2 p').text("Player1 Won");
+          $('.winner').text("Android wins");
+          $('.winner').show('slow');      
+        }
+        else if(parseInt($('.ball2').css("margin-left"))>930)
+        {
+          console.log("Game Over");
+          // $('.player1 p').text("Player 2 Won");
+          $('.winner').text("Apple wins");
+          $('.winner').show('slow');       
+        }
+  switch(e.which){
+    case 39:
+      if((parseInt($('.line').css("margin-left")) - parseInt($('.ball').css("margin-left"))  === 60) && (parseInt($('.ball2').css("margin-left")) - parseInt($('.line').css("margin-left")) <= 5) ){
+              $('.ball').animate({marginLeft:  '+=5px'}, 1);
+              $('.line').animate({marginLeft:  '+=5px'}, 1);
+              $('.ball2').animate({marginLeft: '+=5px'}, 1);
+               $('.ball').animate({marginLeft:  '+=5px'}, 1);
+              $('.line').animate({marginLeft:  '+=5px'}, 1);
+              $('.ball2').animate({marginLeft: '+=5px'}, 1);
+            }
+            else if( parseInt($('.line').css("margin-left")) - parseInt($('.ball').css("margin-left"))  === 30 ){
+              console.log('capture the line');
+              $('.ball').animate({marginLeft: '+=5px'}, 1);
+              $('.line').animate({marginLeft: '+=5px'}, 1);
+              $('.ball').animate({marginLeft: '+=5px'}, 1);
+              $('.line').animate({marginLeft: '+=5px'}, 1);
+            }
+            else{
+              $('.ball').animate({marginLeft: '+=5px'}, 1);
+              $('.ball').animate({marginLeft: '+=5px'}, 1);
+            }
+      break;
+    case 65:
+      if((parseInt($('.line').css("margin-left")) - parseInt($('.ball').css("margin-left"))  === 30) && (parseInt($('.ball2').css("margin-left")) - parseInt($('.line').css("margin-left"))  <= 5 )){
+              $('.ball2').animate({marginLeft: '-=5px'}, 1);
+              $('.line').animate({marginLeft: '-=5px'}, 1);
+              $('.ball').animate({marginLeft: '-=5px'}, 1);
+              $('.ball2').animate({marginLeft: '-=5px'}, 1);
+              $('.line').animate({marginLeft: '-=5px'}, 1);
+              $('.ball').animate({marginLeft: '-=5px'}, 1);
+            }
+            else if( parseInt($('.ball2').css("margin-left")) - parseInt($('.line').css("margin-left")) <= 5){
+              console.log('capture the line');
+              $('.ball2').animate({marginLeft: '-=5px'}, 1);
+              $('.line').animate({marginLeft: '-=5px'}, 1);
+              $('.ball2').animate({marginLeft: '-=5px'}, 1);
+              $('.line').animate({marginLeft: '-=5px'}, 1);
+            }
+            else{
+              $('.ball2').animate({marginLeft: '-=5px'}, 1);
+              $('.ball2').animate({marginLeft: '-=5px'}, 1);
+            }
+      break;
+    default:
+      return;
+  }
+    e.preventDefault(); // prevent the default action (scroll / move caret)
+});
+</script>
+  </body>
+</html>

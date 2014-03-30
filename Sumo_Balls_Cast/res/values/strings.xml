@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--  6A65ABD1   -->
+    <string name="app_id">CA45A72A</string>
+    <string name="namespace">urn:x-cast:com.google.cast.sample.helloworld</string>
+    <string name="action_settings">Settings</string>
+</resources>
